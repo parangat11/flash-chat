@@ -3,6 +3,7 @@ const { chats } = require("./data/data.js");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db.js");
 const userRoutes = require("./routes/userRoutes.js");
+const uploadRoute = require("./routes/uploadRoute.js");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
 
 const app = express();
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRoutes);
+app.use("/api/get-signature", uploadRoute);
 
 app.use(notFound);
 app.use(errorHandler);

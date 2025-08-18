@@ -13,7 +13,7 @@ const accessChat = asyncHandler(async (req, res) => {
         return res.sendStatus(400);
     }
 
-    var isChat = await Chat.find({
+    let isChat = await Chat.find({
         isGroupChat: false,
         $and: [
             { users: { $elemMatch: { $eq: req.user._id } } },
@@ -31,7 +31,7 @@ const accessChat = asyncHandler(async (req, res) => {
     if (isChat.length > 0) {
         res.send(isChat[0]);
     } else {
-        var chatData = {
+        let chatData = {
             chatName: "sender",
             isGroupChat: false,
             users: [req.user._id, userId],
@@ -104,8 +104,33 @@ const createGroupChat = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Rename Group
+// @route   PUT /api/chat/rename
+// @access  Protected
+const renameGroup = asyncHandler(async (req, res) => {
+    const { chatId, chatName } = req.body;
+    const updatedChat = await Chat.findByIdAndUpdate(
+        chatId,
+        {
+            chatName,
+        },
+        {
+            new: true, // Just returns the new value of the chat to updatedChat
+        }
+    )
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password");
+    if (!updatedChat) {
+        res.status(404);
+        throw new Error("Chat not found!");
+    } else {
+        res.status(200).json(updatedChat);
+    }
+});
+
 module.exports = {
     accessChat,
     fetchChats,
     createGroupChat,
+    renameGroup,
 };

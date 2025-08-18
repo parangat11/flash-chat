@@ -9,6 +9,8 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
+import axios from "axios";
+import { useHistory } from "react-router-dom";
 
 const Signup = () => {
     const [name, setName] = useState();
@@ -20,6 +22,7 @@ const Signup = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const toast = useToast();
+    const history = useHistory();
 
     const handleClick = () => setShowPassword(!showPassword);
     const handleConfirmClick = () =>
@@ -67,7 +70,59 @@ const Signup = () => {
             setLoading(false);
         }
     };
-    const submitHandler = () => {};
+
+    const submitHandler = async () => {
+        setLoading(true);
+        if (!name || !email || !password || !confirmPassword) {
+            toast({
+                title: "Please fill all the fields!",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+            setLoading(false);
+            return;
+        }
+        try {
+            const config = {
+                headers: {
+                    "Content-type": "application/json",
+                },
+            };
+            const { data } = await axios.post(
+                "/api/user",
+                {
+                    name,
+                    email,
+                    password,
+                    pic,
+                },
+                config
+            );
+            toast({
+                title: "Registration Successful!",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+
+            localStorage.setItem("userInfo", JSON.stringify(data));
+            history.push("/chats");
+        } catch (error) {
+            toast({
+                title: "Error Occured!",
+                description: error.response.data.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <VStack spacing="5px">

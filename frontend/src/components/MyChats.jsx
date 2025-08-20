@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ChatState } from "../Context/ChatContextProvider";
-import { useToast } from "@chakra-ui/react";
+import { getSender } from "../config/ChatLogics";
+import { Box, Button, Text, Stack, useToast } from "@chakra-ui/react";
 import axios from "axios";
 
 const MyChats = () => {
@@ -46,27 +47,19 @@ const MyChats = () => {
             w={{ base: "100%", md: "31%" }}
             borderRadius="lg"
             borderWidth="1px"
+            opacity="80%"
         >
             <Box
                 pb={3}
                 px={3}
                 fontSize={{ base: "28px", md: "30px" }}
                 fontFamily="Work sans"
-                d="flex"
+                display="flex"
                 w="100%"
                 justifyContent="space-between"
                 alignItems="center"
             >
                 My Chats
-                <GroupChatModal>
-                    <Button
-                        d="flex"
-                        fontSize={{ base: "17px", md: "10px", lg: "17px" }}
-                        rightIcon={<AddIcon />}
-                    >
-                        New Group Chat
-                    </Button>
-                </GroupChatModal>
             </Box>
             <Box
                 d="flex"
@@ -86,11 +79,8 @@ const MyChats = () => {
                                 cursor="pointer"
                                 bg={
                                     selectedChat === chat
-                                        ? "#38B2AC"
+                                        ? "#FFD700"
                                         : "#E8E8E8"
-                                }
-                                color={
-                                    selectedChat === chat ? "white" : "black"
                                 }
                                 px={3}
                                 py={2}
@@ -102,19 +92,6 @@ const MyChats = () => {
                                         ? getSender(loggedUser, chat.users)
                                         : chat.chatName}
                                 </Text>
-                                {chat.latestMessage && (
-                                    <Text fontSize="xs">
-                                        <b>
-                                            {chat.latestMessage.sender.name} :{" "}
-                                        </b>
-                                        {chat.latestMessage.content.length > 50
-                                            ? chat.latestMessage.content.substring(
-                                                  0,
-                                                  51
-                                              ) + "..."
-                                            : chat.latestMessage.content}
-                                    </Text>
-                                )}
                             </Box>
                         ))}
                     </Stack>

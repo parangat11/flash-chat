@@ -12,7 +12,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
-const Signup = () => {
+const Login = () => {
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
     const [showPassword, setShowPassword] = useState(false);
@@ -114,7 +114,7 @@ const Signup = () => {
                 width="100%"
                 style={{ marginTop: 15 }}
                 onClick={() => {
-                    setEmail("guest@exampl.com");
+                    setEmail("guest@example.com");
                     setPassword("123456");
                 }}
             >
@@ -124,4 +124,4 @@ const Signup = () => {
     );
 };
 
-export default Signup;
+export default Login;

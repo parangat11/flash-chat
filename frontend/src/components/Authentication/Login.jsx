@@ -11,6 +11,7 @@ import {
 import React, { useState } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import { ChatState } from "../../Context/ChatContextProvider";
 
 const Login = () => {
     const [email, setEmail] = useState();
@@ -19,6 +20,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const toast = useToast();
     const history = useHistory();
+    const { setUser } = ChatState();
 
     const handleClick = () => setShowPassword(!showPassword);
     const submitHandler = async () => {
@@ -57,6 +59,7 @@ const Login = () => {
             });
 
             localStorage.setItem("userInfo", JSON.stringify(data));
+            setUser(data);
             history.push("/chats");
         } catch (error) {
             toast({

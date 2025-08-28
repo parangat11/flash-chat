@@ -1,16 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChatState } from "../Context/ChatContextProvider";
 import {
+    Avatar,
     Box,
     FormControl,
     IconButton,
     Input,
     Spinner,
     Text,
+    Tooltip,
     useToast,
 } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
-import { getSender, getSenderFull } from "../config/ChatLogics";
+import {
+    getSender,
+    getSenderFull,
+    isLastMessageOfOther,
+    isOtherSenderLastInBlock,
+    isOtherSenderMargin,
+    isSameUser,
+} from "../config/ChatLogics";
 import ProfileModal from "./miscellaneous/ProfileModal";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import axios from "axios";
@@ -164,15 +173,81 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                         ) : (
                             <div className="messages">
                                 {messages &&
-                                    messages.map((message) => (
-                                        <div
-                                            className="message"
-                                            key={message._id}
-                                            style={{ display: "flex" }}
-                                        >
-                                            {message.content}
-                                        </div>
-                                    ))}
+                                    messages.map((message, idx) => {
+                                        console.log(message.sender.name);
+                                        return (
+                                            <div
+                                                className="message"
+                                                key={idx}
+                                                style={{ display: "flex" }}
+                                            >
+                                                {(isOtherSenderLastInBlock(
+                                                    messages,
+                                                    message,
+                                                    idx,
+                                                    user._id
+                                                ) ||
+                                                    isLastMessageOfOther(
+                                                        messages,
+                                                        idx,
+                                                        user._id
+                                                    )) && (
+                                                    <Tooltip
+                                                        label={
+                                                            message.sender.name
+                                                        }
+                                                        placement="bottom-start"
+                                                        hasArrow
+                                                    >
+                                                        <Avatar
+                                                            mt="7px"
+                                                            mr={1}
+                                                            size="sm"
+                                                            cursor="pointer"
+                                                            name={
+                                                                message.sender
+                                                                    .name
+                                                            }
+                                                            src={
+                                                                message.sender
+                                                                    .pic
+                                                            }
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                                <span
+                                                    style={{
+                                                        backgroundColor: `${
+                                                            message.sender
+                                                                ._id ===
+                                                            user._id
+                                                                ? "#BEE3F8"
+                                                                : "#FFD700"
+                                                        }`,
+                                                        borderRadius: "20px",
+                                                        padding: "5px 15px",
+                                                        maxWidth: "75%",
+                                                        marginLeft:
+                                                            isOtherSenderMargin(
+                                                                messages,
+                                                                message,
+                                                                idx,
+                                                                user._id
+                                                            ),
+                                                        marginTop: isSameUser(
+                                                            messages,
+                                                            message,
+                                                            idx
+                                                        )
+                                                            ? 3
+                                                            : 10,
+                                                    }}
+                                                >
+                                                    {message.content}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 <div ref={bottomRef} />
                             </div>
                         )}

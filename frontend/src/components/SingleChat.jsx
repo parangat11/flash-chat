@@ -24,6 +24,10 @@ import ProfileModal from "./miscellaneous/ProfileModal";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import axios from "axios";
 import "./styles.css";
+import io from "socket.io-client";
+
+const BACKEND_ENDPOINT = "http://localhost:5000";
+let socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const toast = useToast();
@@ -31,8 +35,15 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState();
+    const [socketConnected, setSocketConnected] = useState(false);
 
     const bottomRef = useRef(null);
+
+    useEffect(() => {
+        socket = io(BACKEND_ENDPOINT);
+        socket.emit("setup", user);
+        socket.on("connection", () => setSocketConnected(true));
+    }, []);
 
     const fetchMessages = async () => {
         if (!selectedChat) return;
@@ -51,6 +62,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
             setMessages(data);
             setLoading(false);
+
+            socket.emit("join chat", selectedChat._id);
         } catch (error) {
             console.log(error);
             toast({
@@ -65,14 +78,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        fetchMessages();
-    }, [selectedChat]);
-
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
 
     const sendMessage = async (e) => {
         if (e.key === "Enter" && newMessage) {
@@ -92,6 +97,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                     },
                     config
                 );
+                socket.emit("new message", data);
                 setMessages([...messages, data]);
             } catch (error) {
                 console.log(error);
@@ -110,6 +116,28 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
     };
+
+    useEffect(() => {
+        fetchMessages();
+        selectedChatCompare = selectedChat;
+    }, [selectedChat]);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    useEffect(() => {
+        socket.on("message received", (newMessage) => {
+            if (
+                !selectedChatCompare ||
+                selectedChatCompare._id !== newMessage.chat._id
+            ) {
+                // give notification
+            } else {
+                setMessages([...messages, newMessage]);
+            }
+        });
+    });
 
     return (
         <>
@@ -174,7 +202,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                             <div className="messages">
                                 {messages &&
                                     messages.map((message, idx) => {
-                                        console.log(message.sender.name);
                                         return (
                                             <div
                                                 className="message"

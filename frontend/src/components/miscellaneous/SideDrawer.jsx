@@ -38,6 +38,7 @@ const SideDrawer = () => {
     const [loadingChat, setLoadingChat] = useState();
     const {
         user,
+        setUser,
         setSelectedChat,
         chats,
         setChats,
@@ -48,6 +49,10 @@ const SideDrawer = () => {
     const history = useHistory();
     const logoutHandler = () => {
         localStorage.removeItem("userInfo");
+        setUser(null);
+        setSelectedChat(null);
+        setChats([]);
+        setNotification([]);
         history.push("/");
     };
     const toast = useToast();

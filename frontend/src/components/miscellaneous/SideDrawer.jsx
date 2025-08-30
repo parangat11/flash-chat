@@ -29,7 +29,7 @@ import axios from "axios";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserAvatar/UserListItem";
 import { getSender } from "../../config/ChatLogics";
-import { NotificationBadge } from "./NotificationBadge";
+import NotificationBadge from "./NotificationBadge";
 
 const SideDrawer = () => {
     const [search, setSearch] = useState();

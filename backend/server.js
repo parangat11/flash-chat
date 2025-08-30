@@ -7,20 +7,11 @@ const connectDB = require("./config/db.js");
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://flash-chat-app-rdan.onrender.com/",
-];
-
 const app = express();
 app.use(express.json());
 const cors = require("cors");
 
-app.use(
-    cors({
-        origin: allowedOrigins,
-    })
-);
+app.use(cors());
 
 dotenv.config();
 connectDB();
@@ -42,7 +33,7 @@ const server = app.listen(PORT, console.log(`Server running on port ${PORT}`));
 const io = require("socket.io")(server, {
     pingTimeout: 60000,
     cors: {
-        origin: allowedOrigins,
+        origin: "*",
     },
 });
 

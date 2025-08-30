@@ -9,7 +9,7 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../../../utils/api";
 import { useHistory } from "react-router-dom";
 import { ChatState } from "../../Context/ChatContextProvider";
 
@@ -93,7 +93,7 @@ const Signup = () => {
         }
         if (!emailFormatChecker(email)) {
             toast({
-                title: "Please enter a valid email!",
+                title: "Please enter a valid email format!",
                 status: "warning",
                 duration: 5000,
                 isClosable: true,
@@ -119,7 +119,7 @@ const Signup = () => {
                     "Content-type": "application/json",
                 },
             };
-            const { data } = await axios.post(
+            const { data } = await API.post(
                 "/api/user",
                 {
                     name,

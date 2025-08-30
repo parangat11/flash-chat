@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { ChatState } from "../../Context/ChatContextProvider";
-import axios from "axios";
+import API from "../../../utils/api";
 import UserListItem from "../UserAvatar/UserListItem";
 import UserBadgeItem from "../UserAvatar/UserBadgeItem";
 
@@ -65,7 +65,7 @@ const GroupChatModal = ({ children }) => {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const data = await axios.get(`/api/user?search=${search}`, config);
+            const data = await API.get(`/api/user?search=${search}`, config);
             console.log(data);
             setSearchResult(data.data);
         } catch (error) {
@@ -107,7 +107,7 @@ const GroupChatModal = ({ children }) => {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.post(
+            const { data } = await API.post(
                 `/api/chat/group`,
                 {
                     name: groupChatName,

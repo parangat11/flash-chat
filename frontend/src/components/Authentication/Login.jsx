@@ -9,7 +9,7 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../../../utils/api";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { ChatState } from "../../Context/ChatContextProvider";
 
@@ -42,7 +42,7 @@ const Login = () => {
                     "Content-type": "application/json",
                 },
             };
-            const { data } = await axios.post(
+            const { data } = await API.post(
                 "/api/user/login",
                 {
                     email,

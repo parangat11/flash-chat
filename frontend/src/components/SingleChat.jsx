@@ -22,7 +22,7 @@ import {
 } from "../config/ChatLogics";
 import ProfileModal from "./miscellaneous/ProfileModal";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
-import axios from "axios";
+import API from "../../utils/api";
 import "./styles.css";
 import io from "socket.io-client";
 
@@ -63,7 +63,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 },
             };
 
-            const { data } = await axios.get(
+            const { data } = await API.get(
                 `api/message/${selectedChat._id}`,
                 config
             );
@@ -101,7 +101,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                     },
                 };
                 setNewMessage("");
-                const { data } = await axios.post(
+                const { data } = await API.post(
                     "/api/message",
                     {
                         content: newMessage,
@@ -167,8 +167,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     useEffect(() => {
         bottomRef.current?.scrollIntoView();
     }, [messages]);
-
-    console.log(notification);
 
     useEffect(() => {
         socket.on("message received", (newMessageReceived) => {

@@ -45,6 +45,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [typing, setTyping] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const selectedChatRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
     useEffect(() => {
         selectedChatRef.current = selectedChat;
         setIsTyping(false);
@@ -160,6 +161,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     useEffect(() => {
         fetchMessages();
         selectedChatCompare = selectedChat;
+        // eslint-disable-next-line
     }, [selectedChat]);
 
     useEffect(() => {
@@ -192,21 +194,15 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             socket.emit("typing", { room: selectedChat._id, userId: user._id });
         }
 
-        const lastTypingTime = Date.now();
-        const timerLength = 3000;
-
-        setTimeout(() => {
-            const timeNow = Date.now();
-            const timeDiff = timeNow - lastTypingTime;
-
-            if (timeDiff >= timerLength && typing) {
-                socket.emit("stop typing", {
-                    room: selectedChat._id,
-                    userId: user._id,
-                });
-                setTyping(false);
-            }
-        }, timerLength);
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit("stop typing", {
+                room: selectedChat._id,
+                userId: user._id,
+            });
+            setTyping(false);
+            typingTimeoutRef.current = null;
+        }, 3000);
     };
 
     console.log(notification, "------------");

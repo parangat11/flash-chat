@@ -16,7 +16,7 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://flash-chat-frontend.vercel.app",
+            "https://flash-chat-app-rdan.onrender.com/",
         ],
     })
 );

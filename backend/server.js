@@ -3,15 +3,23 @@ const chatRoutes = require("./routes/chatRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const messageRoutes = require("./routes/messageRoutes.js");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const connectDB = require("./config/db.js");
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
 
 const app = express();
 dotenv.config();
-
 connectDB();
 app.use(express.json());
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "https://flash-chat-frontend.vercel.app",
+        ],
+    })
+);
 
 app.get("/", (req, res) => {
     res.send("API is running");

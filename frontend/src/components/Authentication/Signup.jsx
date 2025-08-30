@@ -26,6 +26,11 @@ const Signup = () => {
     const history = useHistory();
     const { setUser } = ChatState();
 
+    const emailFormatChecker = (email) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+
     const handleClick = () => setShowPassword(!showPassword);
     const handleConfirmClick = () =>
         setShowConfirmPassword(!showConfirmPassword);
@@ -78,6 +83,28 @@ const Signup = () => {
         if (!name || !email || !password || !confirmPassword) {
             toast({
                 title: "Please fill all the fields!",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+            setLoading(false);
+            return;
+        }
+        if (!emailFormatChecker(email)) {
+            toast({
+                title: "Please enter a valid email!",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+            setLoading(false);
+            return;
+        }
+        if (password !== confirmPassword) {
+            toast({
+                title: "Passwords do not match!",
                 status: "warning",
                 duration: 5000,
                 isClosable: true,

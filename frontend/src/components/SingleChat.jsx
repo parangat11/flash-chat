@@ -168,6 +168,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         bottomRef.current?.scrollIntoView();
     }, [messages]);
 
+    console.log(notification);
+
     useEffect(() => {
         socket.on("message received", (newMessageReceived) => {
             if (
@@ -202,10 +204,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             });
             setTyping(false);
             typingTimeoutRef.current = null;
-        }, 3000);
+        }, 1500);
     };
 
-    console.log(notification, "------------");
     return (
         <>
             {selectedChat ? (
@@ -376,6 +377,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                         )}
                         <FormControl onKeyDown={sendMessage} isRequired mt={3}>
                             <Input
+                                autoComplete="off"
                                 variant="filled"
                                 bg="#E0E0E0"
                                 placeholder="Enter a message..."

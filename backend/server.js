@@ -59,4 +59,14 @@ io.on("connection", (socket) => {
             socket.in(user._id).emit("message received", newMessage);
         });
     });
+
+    socket.on("typing", ({ room, userId }) => {
+        socket.in(room).emit("typing", userId);
+    });
+    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+
+    socket.off("setup", () => {
+        console.log("USER DISCONNECTED");
+        socket.leave(userData._id);
+    });
 });

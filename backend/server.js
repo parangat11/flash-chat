@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname1, "/frontend/dist")));
     app.get("*", (req, res) => {
         res.sendFile(
-            path.resolve(__dirname1, "frontend", "build", "index.html")
+            path.resolve(__dirname1, "frontend", "dist", "index.html")
         );
     });
 } else {
@@ -38,7 +38,7 @@ if (process.env.NODE_ENV === "production") {
     });
 }
 
-//Deployment code end
+// Deployment code end
 
 app.use(notFound);
 app.use(errorHandler);
@@ -57,6 +57,7 @@ io.on("connection", (socket) => {
     console.log("connected to the frontend");
 
     socket.on("setup", (userData) => {
+        socket.userId = userData._id;
         socket.join(userData._id); // Room for a particular user, with his ID - to be used for notify
         socket.emit("connected");
     });
@@ -91,6 +92,6 @@ io.on("connection", (socket) => {
 
     socket.off("setup", () => {
         console.log("USER DISCONNECTED");
-        socket.leave(userData._id);
+        socket.leave(socket.userId);
     });
 });

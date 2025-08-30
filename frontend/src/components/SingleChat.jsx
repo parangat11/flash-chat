@@ -31,13 +31,24 @@ let socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const toast = useToast();
-    const { selectedChat, setSelectedChat, user } = ChatState();
+    const {
+        selectedChat,
+        setSelectedChat,
+        user,
+        notification,
+        setNotification,
+    } = ChatState();
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState();
     const [socketConnected, setSocketConnected] = useState(false);
     const [typing, setTyping] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
+    const selectedChatRef = useRef(null);
+    useEffect(() => {
+        selectedChatRef.current = selectedChat;
+        setIsTyping(false);
+    }, [selectedChat]);
 
     const bottomRef = useRef(null);
 
@@ -77,7 +88,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     const sendMessage = async (e) => {
         if (e.key === "Enter" && newMessage) {
-            socket.emit("stop typing", selectedChat._id);
+            socket.emit("stop typing", {
+                room: selectedChat._id,
+                userId: user._id,
+            });
             try {
                 const config = {
                     headers: {
@@ -113,11 +127,34 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     useEffect(() => {
         socket = io(BACKEND_ENDPOINT);
         socket.emit("setup", user);
-        socket.on("connected", () => setSocketConnected(true));
-        socket.on("typing", (typingUserId) => {
-            if (typingUserId !== user._id) setIsTyping(true);
-        });
-        socket.on("stop typing", () => setIsTyping(false));
+
+        const onConnected = () => setSocketConnected(true);
+
+        const onTyping = ({ userId, chatId }) => {
+            const current = selectedChatRef.current;
+            if (current && chatId === current._id && userId !== user._id) {
+                setIsTyping(true);
+            }
+        };
+
+        const onStopTyping = ({ userId, chatId }) => {
+            const current = selectedChatRef.current;
+            if (current && chatId === current._id && userId !== user._id) {
+                setIsTyping(false);
+            }
+        };
+
+        socket.on("connected", onConnected);
+        socket.on("typing", onTyping);
+        socket.on("stop typing", onStopTyping);
+
+        return () => {
+            socket.off("connected", onConnected);
+            socket.off("typing", onTyping);
+            socket.off("stop typing", onStopTyping);
+            socket.disconnect();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -126,41 +163,53 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }, [selectedChat]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        bottomRef.current?.scrollIntoView();
     }, [messages]);
 
     useEffect(() => {
-        socket.on("message received", (newMessage) => {
+        socket.on("message received", (newMessageReceived) => {
             if (
                 !selectedChatCompare ||
-                selectedChatCompare._id !== newMessage.chat._id
+                selectedChatCompare._id !== newMessageReceived.chat._id
             ) {
-                // give notification
+                if (!notification.includes(newMessageReceived)) {
+                    setNotification([newMessageReceived, ...notification]);
+                    console.log("notifications", notification);
+                    setFetchAgain(!fetchAgain);
+                }
             } else {
-                setMessages([...messages, newMessage]);
+                setMessages([...messages, newMessageReceived]);
             }
         });
     });
 
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
-        if (!socketConnected) return;
+        if (!socketConnected || !selectedChat) return;
+
         if (!typing) {
             setTyping(true);
             socket.emit("typing", { room: selectedChat._id, userId: user._id });
         }
-        let lastTypingTime = new Date().getTime();
-        let timerLength = 1000;
+
+        const lastTypingTime = Date.now();
+        const timerLength = 3000;
+
         setTimeout(() => {
-            let timeNow = new Date().getTime();
-            let timeDifference = timeNow - lastTypingTime;
-            if (timeDifference >= timerLength && typing) {
-                socket.emit("stop typing", selectedChat._id);
+            const timeNow = Date.now();
+            const timeDiff = timeNow - lastTypingTime;
+
+            if (timeDiff >= timerLength && typing) {
+                socket.emit("stop typing", {
+                    room: selectedChat._id,
+                    userId: user._id,
+                });
                 setTyping(false);
             }
         }, timerLength);
     };
 
+    console.log(notification, "------------");
     return (
         <>
             {selectedChat ? (
@@ -221,108 +270,115 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                                 margin="auto"
                             />
                         ) : (
-                            <div className="messages">
-                                {messages &&
-                                    messages.map((message, idx) => {
-                                        return (
-                                            <div
-                                                className="message"
-                                                key={idx}
-                                                style={{ display: "flex" }}
-                                            >
-                                                {(isOtherSenderLastInBlock(
-                                                    messages,
-                                                    message,
-                                                    idx,
-                                                    user._id
-                                                ) ||
-                                                    isLastMessageOfOther(
+                            <>
+                                <div className="messages">
+                                    {messages &&
+                                        messages.map((message, idx) => {
+                                            return (
+                                                <div
+                                                    className="message"
+                                                    key={idx}
+                                                    style={{ display: "flex" }}
+                                                >
+                                                    {(isOtherSenderLastInBlock(
                                                         messages,
+                                                        message,
                                                         idx,
                                                         user._id
-                                                    )) && (
-                                                    <Tooltip
-                                                        label={
-                                                            message.sender.name
-                                                        }
-                                                        placement="bottom-start"
-                                                        hasArrow
-                                                    >
-                                                        <Avatar
-                                                            mt="7px"
-                                                            mr={1}
-                                                            size="sm"
-                                                            cursor="pointer"
-                                                            name={
+                                                    ) ||
+                                                        isLastMessageOfOther(
+                                                            messages,
+                                                            idx,
+                                                            user._id
+                                                        )) && (
+                                                        <Tooltip
+                                                            label={
                                                                 message.sender
                                                                     .name
                                                             }
-                                                            src={
+                                                            placement="bottom-start"
+                                                            hasArrow
+                                                        >
+                                                            <Avatar
+                                                                mt="7px"
+                                                                mr={1}
+                                                                size="sm"
+                                                                cursor="pointer"
+                                                                name={
+                                                                    message
+                                                                        .sender
+                                                                        .name
+                                                                }
+                                                                src={
+                                                                    message
+                                                                        .sender
+                                                                        .pic
+                                                                }
+                                                            />
+                                                        </Tooltip>
+                                                    )}
+                                                    <span
+                                                        style={{
+                                                            backgroundColor: `${
                                                                 message.sender
-                                                                    .pic
-                                                            }
-                                                        />
-                                                    </Tooltip>
-                                                )}
-                                                <span
-                                                    style={{
-                                                        backgroundColor: `${
-                                                            message.sender
-                                                                ._id ===
-                                                            user._id
-                                                                ? "#BEE3F8"
-                                                                : "#FFD700"
-                                                        }`,
-                                                        borderRadius: "20px",
-                                                        padding: "5px 15px",
-                                                        maxWidth: "75%",
-                                                        marginLeft:
-                                                            isOtherSenderMargin(
-                                                                messages,
-                                                                message,
-                                                                idx,
+                                                                    ._id ===
                                                                 user._id
-                                                            ),
-                                                        marginTop: isSameUser(
-                                                            messages,
-                                                            message,
-                                                            idx
-                                                        )
-                                                            ? 3
-                                                            : 10,
-                                                    }}
-                                                >
-                                                    {message.content}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
-                                <div ref={bottomRef} />
-                            </div>
-                        )}
-                        <FormControl onKeyDown={sendMessage} isRequired mt={3}>
-                            {isTyping && (
-                                <div
-                                    className="message"
-                                    style={{
-                                        display: "flex",
-                                        paddingBottom: "15px",
-                                    }}
-                                >
-                                    <span
+                                                                    ? "#BEE3F8"
+                                                                    : "#FFD700"
+                                                            }`,
+                                                            borderRadius:
+                                                                "20px",
+                                                            padding: "5px 15px",
+                                                            maxWidth: "75%",
+                                                            marginLeft:
+                                                                isOtherSenderMargin(
+                                                                    messages,
+                                                                    message,
+                                                                    idx,
+                                                                    user._id
+                                                                ),
+                                                            marginTop:
+                                                                isSameUser(
+                                                                    messages,
+                                                                    message,
+                                                                    idx
+                                                                )
+                                                                    ? 3
+                                                                    : 10,
+                                                        }}
+                                                    >
+                                                        {message.content}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    <div ref={bottomRef} />
+                                </div>
+                                {isTyping && (
+                                    <div
+                                        className="message"
                                         style={{
-                                            backgroundColor: "#E0E0E0",
-                                            borderRadius: "20px",
-                                            padding: "5px 15px",
-                                            maxWidth: "75%",
-                                            marginLeft: 33,
-                                            marginTop: 10,
+                                            display: "flex",
+                                            paddingBottom: "15px",
                                         }}
                                     >
-                                        Typing...
-                                    </span>
-                                </div>
-                            )}
+                                        <span
+                                            style={{
+                                                backgroundColor: "#E0E0E0",
+                                                borderRadius: "20px",
+                                                padding: "5px 15px",
+                                                maxWidth: "75%",
+                                                marginLeft: 33,
+                                                marginTop: 10,
+                                            }}
+                                        >
+                                            Typing...
+                                        </span>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                        <FormControl onKeyDown={sendMessage} isRequired mt={3}>
                             <Input
                                 variant="filled"
                                 bg="#E0E0E0"

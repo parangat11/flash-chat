@@ -145,7 +145,7 @@ const SideDrawer = () => {
                             <MenuButton p={1}>
                                 <BellIcon fontSize={"2xl"} m={1} />
                             </MenuButton>
-                            {/* <MenuList></MenuList> */}
+                            <MenuList></MenuList>
                         </Menu>
                         <Menu>
                             <MenuButton as={Button}>

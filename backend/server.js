@@ -38,7 +38,7 @@ io.on("connection", (socket) => {
     console.log("connected to the frontend");
 
     socket.on("setup", (userData) => {
-        socket.join(userData._id); // Room for a particular user
+        socket.join(userData._id); // Room for a particular user, with his ID - to be used for notify
         socket.emit("connected");
     });
 
@@ -61,9 +61,14 @@ io.on("connection", (socket) => {
     });
 
     socket.on("typing", ({ room, userId }) => {
-        socket.in(room).emit("typing", userId);
+        if (!room || !userId) return;
+        socket.to(room).emit("typing", { userId, chatId: room });
     });
-    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+
+    socket.on("stop typing", ({ room, userId }) => {
+        if (!room || !userId) return;
+        socket.to(room).emit("stop typing", { userId, chatId: room });
+    });
 
     socket.off("setup", () => {
         console.log("USER DISCONNECTED");

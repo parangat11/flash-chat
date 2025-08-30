@@ -12,7 +12,6 @@ const MyChats = ({ fetchAgain }) => {
         ChatState();
     const toast = useToast();
     const fetchChats = async () => {
-        if (!user) return;
         try {
             const config = {
                 headers: {

@@ -4,9 +4,7 @@ import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 const ChatContext = createContext();
 
 const ChatContextProvider = ({ children }) => {
-    const [user, setUser] = useState(() => {
-        return JSON.parse(localStorage.getItem("userInfo")) || null;
-    });
+    const [user, setUser] = useState();
     const [selectedChat, setSelectedChat] = useState("");
     const [chats, setChats] = useState([]);
     const [notification, setNotification] = useState([]);

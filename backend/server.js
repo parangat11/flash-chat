@@ -3,7 +3,6 @@ const chatRoutes = require("./routes/chatRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const messageRoutes = require("./routes/messageRoutes.js");
 const dotenv = require("dotenv");
-const path = require("path");
 const connectDB = require("./config/db.js");
 const { Server } = require("socket.io");
 
@@ -77,27 +76,9 @@ io.on("connection", (socket) => {
     });
 });
 
-// Deploment code start
-
-const __dirname1 = path.resolve();
-if (process.env.NODE_ENV === "production") {
-    app.use(
-        express.static(path.join(__dirname1, "frontend/dist"), {
-            index: false,
-            redirect: false,
-        })
-    );
-
-    app.get(/^\/(?!api|socket\.io).*/, (req, res) => {
-        res.sendFile(path.join(__dirname1, "frontend/dist", "index.html"));
-    });
-} else {
-    app.get("/", (req, res) => {
-        res.send("API is running");
-    });
-}
-
-// Deployment code end
+app.get("/", (req, res) => {
+    res.send("API is running");
+});
 
 app.use(notFound);
 app.use(errorHandler);

@@ -26,10 +26,7 @@ import API from "../../utils/api";
 import "./styles.css";
 import io from "socket.io-client";
 
-const BACKEND_ENDPOINT =
-    import.meta.env.NODE_ENV === "production"
-        ? "https://flash-chat-backend-kdh6.onrender.com"
-        : "http://localhost:5000";
+const BACKEND_ENDPOINT = import.meta.env.VITE_BACKEND_ENDPOINT;
 let socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {

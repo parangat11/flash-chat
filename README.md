@@ -1,1 +1,1 @@
-# flash-chat
+# flash-chat-app

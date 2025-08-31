@@ -22,31 +22,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 
-// Deploment code start
-
-const __dirname1 = path.resolve();
-if (process.env.NODE_ENV === "production") {
-    app.use(
-        express.static(path.join(__dirname1, "frontend/dist"), {
-            index: false,
-            redirect: false,
-        })
-    );
-
-    app.get(/^\/(?!api|socket\.io).*/, (req, res) => {
-        res.sendFile(path.join(__dirname1, "frontend/dist", "index.html"));
-    });
-} else {
-    app.get("/", (req, res) => {
-        res.send("API is running");
-    });
-}
-
-// Deployment code end
-
-app.use(notFound);
-app.use(errorHandler);
-
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, console.log(`Server running on port ${PORT}`));
@@ -100,3 +75,28 @@ io.on("connection", (socket) => {
         socket.leave(socket.userId);
     });
 });
+
+// Deploment code start
+
+const __dirname1 = path.resolve();
+if (process.env.NODE_ENV === "production") {
+    app.use(
+        express.static(path.join(__dirname1, "frontend/dist"), {
+            index: false,
+            redirect: false,
+        })
+    );
+
+    app.get(/^\/(?!api|socket\.io).*/, (req, res) => {
+        res.sendFile(path.join(__dirname1, "frontend/dist", "index.html"));
+    });
+} else {
+    app.get("/", (req, res) => {
+        res.send("API is running");
+    });
+}
+
+// Deployment code end
+
+app.use(notFound);
+app.use(errorHandler);

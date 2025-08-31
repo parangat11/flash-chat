@@ -5,6 +5,7 @@ const messageRoutes = require("./routes/messageRoutes.js");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("./config/db.js");
+const { Server } = require("socket.io");
 
 const { notFound, errorHandler } = require("./middleware/errorMiddleware.js");
 
@@ -25,7 +26,8 @@ app.use("/api/message", messageRoutes);
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, console.log(`Server running on port ${PORT}`));
-const io = require("socket.io")(server, {
+const io = new Server(server, {
+    path: "/realtime/socket.io",
     pingTimeout: 60000,
     cors: {
         origin: "*",
@@ -87,7 +89,7 @@ if (process.env.NODE_ENV === "production") {
         })
     );
 
-    app.get(/^\/(?!api|socket\.io).*/, (req, res) => {
+    app.get(/^\/(?!api|realtime).*/, (req, res) => {
         res.sendFile(path.join(__dirname1, "frontend/dist", "index.html"));
     });
 } else {

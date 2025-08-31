@@ -126,7 +126,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     };
 
     useEffect(() => {
-        socket = io(BACKEND_ENDPOINT);
+        socket = io(import.meta.env.VITE_BACKEND_ENDPOINT, {
+            path: "/realtime/socket.io",
+            transports: ["websocket"],
+        });
         socket.emit("setup", user);
 
         const onConnected = () => setSocketConnected(true);
